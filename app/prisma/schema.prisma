@@ -1,0 +1,548 @@
+// UniCore-OS Database Schema
+// Based on MASTER_BLUEPRINT.md specifications
+// Version: 1.0.0
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserStatus {
+  PENDING_ACTIVATION  // حساب جديد ينتظر التفعيل
+  ACTIVE              // حساب مفعّل ونشط
+  FROZEN              // حساب مجمّد (لا يمكنه الدخول)
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE     // اختيار من متعدد
+  TRUE_FALSE          // صح/خطأ
+  SHORT_ANSWER        // إجابة قصيرة
+}
+
+enum DifficultyLevel {
+  EASY                // سهل
+  MEDIUM              // متوسط
+  HARD                // صعب
+}
+
+enum QuizStatus {
+  DRAFT               // مسودة
+  PUBLISHED           // منشور
+  CLOSED              // مغلق
+}
+
+enum AttemptStatus {
+  IN_PROGRESS         // جاري
+  SUBMITTED           // تم التسليم
+  GRADED              // تم التصحيح
+}
+
+enum SemesterType {
+  FIRST               // الفصل الأول
+  SECOND              // الفصل الثاني
+  SUMMER              // الفصل الصيفي
+}
+
+// ============================================
+// CORE USER & AUTH
+// ============================================
+
+model User {
+  id              String      @id @default(cuid())
+  academicId      String      @unique // الرقم الجامعي
+  nationalId      String?     // رقم الهوية (للتحقق عند التفعيل)
+  email           String?     @unique
+  passwordHash    String?
+  status          UserStatus  @default(PENDING_ACTIVATION)
+  tokenVersion    Int         @default(0) // لإبطال التوكنات
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft Delete
+  lastLoginAt     DateTime?
+  
+  // Relations
+  profile         UserProfile?
+  roles           UserRole[]
+  enrollments     Enrollment[]
+  quizAttempts    QuizAttempt[]
+  createdQuizzes  Quiz[]       @relation("QuizCreator")
+  auditLogs       AuditLog[]   @relation("AuditActor")
+  notifications   Notification[]
+  
+  @@index([academicId])
+  @@index([email])
+  @@index([status])
+}
+
+model UserProfile {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Personal Info
+  firstNameAr     String
+  lastNameAr      String
+  firstNameEn     String?
+  lastNameEn      String?
+  phone           String?
+  avatarUrl       String?
+  
+  // Academic Info
+  majorId         String?
+  major           Major?      @relation(fields: [majorId], references: [id])
+  level           Int?        // المستوى الدراسي
+  gpa             Float?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@index([majorId])
+}
+
+// ============================================
+// DYNAMIC RBAC (الصلاحيات الديناميكية)
+// ============================================
+
+model Permission {
+  id              String      @id @default(cuid())
+  code            String      @unique // e.g., "course.create", "exam.grade"
+  nameAr          String
+  nameEn          String
+  category        String      // e.g., "courses", "exams", "users"
+  description     String?
+  
+  roles           RolePermission[]
+  
+  @@index([category])
+}
+
+model Role {
+  id              String      @id @default(cuid())
+  code            String      @unique
+  nameAr          String
+  nameEn          String?
+  description     String?
+  isSystem        Boolean     @default(false) // Super Admin فقط
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft Delete
+  
+  permissions     RolePermission[]
+  users           UserRole[]
+  
+  @@index([code])
+}
+
+model RolePermission {
+  id              String      @id @default(cuid())
+  roleId          String
+  role            Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId    String
+  permission      Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  @@unique([roleId, permissionId])
+}
+
+model UserRole {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId          String
+  role            Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  assignedAt      DateTime    @default(now())
+  assignedBy      String?     // من قام بالتعيين
+  
+  @@unique([userId, roleId])
+}
+
+// ============================================
+// ACADEMIC HIERARCHY (الهيكل الأكاديمي)
+// ============================================
+
+model College {
+  id              String      @id @default(cuid())
+  code            String      @unique
+  nameAr          String
+  nameEn          String?
+  description     String?
+  isActive        Boolean     @default(true)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft Delete
+  
+  departments     Department[]
+  
+  @@index([code])
+}
+
+model Department {
+  id              String      @id @default(cuid())
+  code            String      @unique
+  nameAr          String
+  nameEn          String?     
+  description     String?
+  isActive        Boolean     @default(true)
+  
+  collegeId       String
+  college         College     @relation(fields: [collegeId], references: [id])
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft Delete
+  
+  majors          Major[]
+  courses         Course[]
+  
+  @@index([collegeId])
+  @@index([code])
+}
+
+model Major {
+  id              String      @id @default(cuid())
+  code            String      @unique
+  nameAr          String
+  nameEn          String?
+  description     String?
+  isActive        Boolean     @default(true)
+  totalCredits    Int         @default(0)
+  
+  departmentId    String
+  department      Department  @relation(fields: [departmentId], references: [id])
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft Delete
+  
+  students        UserProfile[]
+  
+  @@index([departmentId])
+  @@index([code])
+}
+
+// ============================================
+// COURSES & OFFERINGS (المقررات والشعب)
+// ============================================
+
+model Course {
+  id              String      @id @default(cuid())
+  code            String      @unique // e.g., "CS101"
+  nameAr          String
+  nameEn          String?
+  description     String?
+  credits         Int         @default(3)
+  isActive        Boolean     @default(true)
+  
+  departmentId    String
+  department      Department  @relation(fields: [departmentId], references: [id])
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft Delete
+  
+  offerings       CourseOffering[]
+  
+  @@index([departmentId])
+  @@index([code])
+}
+
+model Semester {
+  id              String       @id @default(cuid())
+  code            String       @unique // e.g., "2025-1"
+  nameAr          String
+  nameEn          String?
+  type            SemesterType
+  year            Int
+  startDate       DateTime
+  endDate         DateTime
+  isActive        Boolean      @default(false)
+  isCurrent       Boolean      @default(false)
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  
+  offerings       CourseOffering[]
+  
+  @@index([year, type])
+  @@index([isCurrent])
+}
+
+model CourseOffering {
+  id              String      @id @default(cuid())
+  code            String      @unique // Auto-generated: CS101-2025-1-001
+  
+  courseId        String
+  course          Course      @relation(fields: [courseId], references: [id])
+  
+  semesterId      String
+  semester        Semester    @relation(fields: [semesterId], references: [id])
+  
+  instructorId    String      // الدكتور المسؤول
+  
+  section         String      @default("1") // رقم الشعبة
+  maxStudents     Int         @default(50)
+  isActive        Boolean     @default(true)
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft Delete
+  
+  enrollments     Enrollment[]
+  quizzes         Quiz[]
+  files           File[]
+  
+  @@unique([courseId, semesterId, section])
+  @@index([courseId])
+  @@index([semesterId])
+  @@index([instructorId])
+}
+
+model Enrollment {
+  id              String      @id @default(cuid())
+  
+  studentId       String
+  student         User        @relation(fields: [studentId], references: [id])
+  
+  offeringId      String
+  offering        CourseOffering @relation(fields: [offeringId], references: [id])
+  
+  enrolledAt      DateTime    @default(now())
+  droppedAt       DateTime?
+  
+  @@unique([studentId, offeringId])
+  @@index([studentId])
+  @@index([offeringId])
+}
+
+// ============================================
+// QUIZ ENGINE (محرك الاختبارات)
+// ============================================
+
+model Quiz {
+  id              String      @id @default(cuid())
+  title           String
+  description     String?
+  
+  offeringId      String
+  offering        CourseOffering @relation(fields: [offeringId], references: [id])
+  
+  creatorId       String
+  creator         User        @relation("QuizCreator", fields: [creatorId], references: [id])
+  
+  status          QuizStatus  @default(DRAFT)
+  duration        Int         @default(30) // بالدقائق
+  totalPoints     Float       @default(0)
+  passingScore    Float       @default(60) // النسبة المئوية للنجاح
+  
+  shuffleQuestions Boolean    @default(false)
+  shuffleOptions   Boolean    @default(false)
+  showResults      Boolean    @default(true)
+  allowReview      Boolean    @default(true)
+  
+  startTime       DateTime?
+  endTime         DateTime?
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?   // Soft Delete
+  
+  questions       Question[]
+  attempts        QuizAttempt[]
+  
+  @@index([offeringId])
+  @@index([creatorId])
+  @@index([status])
+}
+
+model Question {
+  id              String         @id @default(cuid())
+  
+  quizId          String
+  quiz            Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  
+  type            QuestionType
+  difficulty      DifficultyLevel @default(MEDIUM)
+  text            String
+  explanation     String?        // شرح الإجابة الصحيحة
+  points          Float          @default(1)
+  order           Int            @default(0)
+  
+  isAiGenerated   Boolean        @default(false)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  options         Option[]
+  answers         Answer[]
+  
+  @@index([quizId])
+  @@index([type])
+}
+
+model Option {
+  id              String      @id @default(cuid())
+  
+  questionId      String
+  question        Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  text            String
+  isCorrect       Boolean     @default(false)
+  order           Int         @default(0)
+  
+  answers         Answer[]
+  
+  @@index([questionId])
+}
+
+model QuizAttempt {
+  id              String        @id @default(cuid())
+  
+  quizId          String
+  quiz            Quiz          @relation(fields: [quizId], references: [id])
+  
+  studentId       String
+  student         User          @relation(fields: [studentId], references: [id])
+  
+  status          AttemptStatus @default(IN_PROGRESS)
+  score           Float?
+  percentage      Float?
+  
+  startedAt       DateTime      @default(now())
+  submittedAt     DateTime?
+  gradedAt        DateTime?
+  
+  answers         Answer[]
+  
+  @@unique([quizId, studentId])
+  @@index([quizId])
+  @@index([studentId])
+  @@index([status])
+}
+
+model Answer {
+  id              String      @id @default(cuid())
+  
+  attemptId       String
+  attempt         QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  
+  questionId      String
+  question        Question    @relation(fields: [questionId], references: [id])
+  
+  selectedOptionId String?
+  selectedOption   Option?    @relation(fields: [selectedOptionId], references: [id])
+  
+  textAnswer      String?     // للأسئلة المقالية
+  isCorrect       Boolean?
+  pointsEarned    Float?
+  
+  answeredAt      DateTime    @default(now())
+  
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+  @@index([questionId])
+}
+
+// ============================================
+// FILES & STORAGE (الملفات)
+// ============================================
+
+model File {
+  id              String      @id @default(cuid())
+  
+  name            String
+  originalName    String
+  mimeType        String
+  size            Int         // بالبايت
+  path            String
+  url             String?
+  
+  offeringId      String?
+  offering        CourseOffering? @relation(fields: [offeringId], references: [id])
+  
+  uploaderId      String
+  
+  createdAt       DateTime    @default(now())
+  deletedAt       DateTime?   // Soft Delete
+  
+  @@index([offeringId])
+  @@index([uploaderId])
+}
+
+// ============================================
+// NOTIFICATIONS (الإشعارات)
+// ============================================
+
+model Notification {
+  id              String      @id @default(cuid())
+  
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title           String
+  body            String
+  type            String      // e.g., "quiz_published", "grade_released"
+  data            Json?       // بيانات إضافية
+  
+  isRead          Boolean     @default(false)
+  readAt          DateTime?
+  
+  createdAt       DateTime    @default(now())
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ============================================
+// AUDIT LOG (سجل التدقيق)
+// ============================================
+
+model AuditLog {
+  id              String      @id @default(cuid())
+  
+  actorId         String?
+  actor           User?       @relation("AuditActor", fields: [actorId], references: [id])
+  
+  action          String      // e.g., "user.create", "quiz.delete"
+  entityType      String      // e.g., "User", "Quiz"
+  entityId        String?
+  
+  oldData         Json?
+  newData         Json?
+  metadata        Json?       // IP, User Agent, etc.
+  
+  createdAt       DateTime    @default(now())
+  
+  @@index([actorId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+// ============================================
+// SYSTEM SETTINGS (إعدادات النظام)
+// ============================================
+
+model SystemSetting {
+  id              String      @id @default(cuid())
+  key             String      @unique
+  value           String
+  type            String      @default("string") // string, number, boolean, json
+  description     String?
+  
+  updatedAt       DateTime    @updatedAt
+  
+  @@index([key])
+}
