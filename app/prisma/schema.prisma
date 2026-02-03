@@ -1,53 +1,21 @@
 // UniCore-OS Database Schema
 // Based on MASTER_BLUEPRINT.md specifications
 // Version: 1.0.0
+// Database: SQLite (Development) / PostgreSQL (Production)
 
 generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output = "../docs/ERD.svg"
+  theme = "dark"
+}
+
 datasource db {
-  provider = "postgresql"
-}
-
-// ============================================
-// ENUMS
-// ============================================
-
-enum UserStatus {
-  PENDING_ACTIVATION  // حساب جديد ينتظر التفعيل
-  ACTIVE              // حساب مفعّل ونشط
-  FROZEN              // حساب مجمّد (لا يمكنه الدخول)
-}
-
-enum QuestionType {
-  MULTIPLE_CHOICE     // اختيار من متعدد
-  TRUE_FALSE          // صح/خطأ
-  SHORT_ANSWER        // إجابة قصيرة
-}
-
-enum DifficultyLevel {
-  EASY                // سهل
-  MEDIUM              // متوسط
-  HARD                // صعب
-}
-
-enum QuizStatus {
-  DRAFT               // مسودة
-  PUBLISHED           // منشور
-  CLOSED              // مغلق
-}
-
-enum AttemptStatus {
-  IN_PROGRESS         // جاري
-  SUBMITTED           // تم التسليم
-  GRADED              // تم التصحيح
-}
-
-enum SemesterType {
-  FIRST               // الفصل الأول
-  SECOND              // الفصل الثاني
-  SUMMER              // الفصل الصيفي
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================
@@ -60,7 +28,7 @@ model User {
   nationalId      String?     // رقم الهوية (للتحقق عند التفعيل)
   email           String?     @unique
   passwordHash    String?
-  status          UserStatus  @default(PENDING_ACTIVATION)
+  status          String      @default("PENDING_ACTIVATION") // PENDING_ACTIVATION, ACTIVE, FROZEN
   tokenVersion    Int         @default(0) // لإبطال التوكنات
   
   // Timestamps
@@ -77,10 +45,7 @@ model User {
   createdQuizzes  Quiz[]       @relation("QuizCreator")
   auditLogs       AuditLog[]   @relation("AuditActor")
   notifications   Notification[]
-  
-  @@index([academicId])
-  @@index([email])
-  @@index([status])
+  uploadedFiles   File[]       @relation("FileUploader")
 }
 
 model UserProfile {
@@ -104,8 +69,6 @@ model UserProfile {
   
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
-  
-  @@index([majorId])
 }
 
 // ============================================
@@ -121,8 +84,6 @@ model Permission {
   description     String?
   
   roles           RolePermission[]
-  
-  @@index([category])
 }
 
 model Role {
@@ -139,8 +100,6 @@ model Role {
   
   permissions     RolePermission[]
   users           UserRole[]
-  
-  @@index([code])
 }
 
 model RolePermission {
@@ -183,8 +142,6 @@ model College {
   deletedAt       DateTime?   // Soft Delete
   
   departments     Department[]
-  
-  @@index([code])
 }
 
 model Department {
@@ -204,9 +161,6 @@ model Department {
   
   majors          Major[]
   courses         Course[]
-  
-  @@index([collegeId])
-  @@index([code])
 }
 
 model Major {
@@ -226,9 +180,6 @@ model Major {
   deletedAt       DateTime?   // Soft Delete
   
   students        UserProfile[]
-  
-  @@index([departmentId])
-  @@index([code])
 }
 
 // ============================================
@@ -252,9 +203,6 @@ model Course {
   deletedAt       DateTime?   // Soft Delete
   
   offerings       CourseOffering[]
-  
-  @@index([departmentId])
-  @@index([code])
 }
 
 model Semester {
@@ -262,7 +210,7 @@ model Semester {
   code            String       @unique // e.g., "2025-1"
   nameAr          String
   nameEn          String?
-  type            SemesterType
+  type            String       // FIRST, SECOND, SUMMER
   year            Int
   startDate       DateTime
   endDate         DateTime
@@ -273,9 +221,6 @@ model Semester {
   updatedAt       DateTime     @updatedAt
   
   offerings       CourseOffering[]
-  
-  @@index([year, type])
-  @@index([isCurrent])
 }
 
 model CourseOffering {
@@ -303,9 +248,6 @@ model CourseOffering {
   files           File[]
   
   @@unique([courseId, semesterId, section])
-  @@index([courseId])
-  @@index([semesterId])
-  @@index([instructorId])
 }
 
 model Enrollment {
@@ -321,8 +263,6 @@ model Enrollment {
   droppedAt       DateTime?
   
   @@unique([studentId, offeringId])
-  @@index([studentId])
-  @@index([offeringId])
 }
 
 // ============================================
@@ -340,7 +280,7 @@ model Quiz {
   creatorId       String
   creator         User        @relation("QuizCreator", fields: [creatorId], references: [id])
   
-  status          QuizStatus  @default(DRAFT)
+  status          String      @default("DRAFT") // DRAFT, PUBLISHED, CLOSED
   duration        Int         @default(30) // بالدقائق
   totalPoints     Float       @default(0)
   passingScore    Float       @default(60) // النسبة المئوية للنجاح
@@ -359,10 +299,6 @@ model Quiz {
   
   questions       Question[]
   attempts        QuizAttempt[]
-  
-  @@index([offeringId])
-  @@index([creatorId])
-  @@index([status])
 }
 
 model Question {
@@ -371,8 +307,8 @@ model Question {
   quizId          String
   quiz            Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
   
-  type            QuestionType
-  difficulty      DifficultyLevel @default(MEDIUM)
+  type            String         // MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER
+  difficulty      String         @default("MEDIUM") // EASY, MEDIUM, HARD
   text            String
   explanation     String?        // شرح الإجابة الصحيحة
   points          Float          @default(1)
@@ -385,9 +321,6 @@ model Question {
   
   options         Option[]
   answers         Answer[]
-  
-  @@index([quizId])
-  @@index([type])
 }
 
 model Option {
@@ -401,8 +334,6 @@ model Option {
   order           Int         @default(0)
   
   answers         Answer[]
-  
-  @@index([questionId])
 }
 
 model QuizAttempt {
@@ -414,7 +345,7 @@ model QuizAttempt {
   studentId       String
   student         User          @relation(fields: [studentId], references: [id])
   
-  status          AttemptStatus @default(IN_PROGRESS)
+  status          String        @default("IN_PROGRESS") // IN_PROGRESS, SUBMITTED, GRADED
   score           Float?
   percentage      Float?
   
@@ -425,9 +356,6 @@ model QuizAttempt {
   answers         Answer[]
   
   @@unique([quizId, studentId])
-  @@index([quizId])
-  @@index([studentId])
-  @@index([status])
 }
 
 model Answer {
@@ -449,8 +377,6 @@ model Answer {
   answeredAt      DateTime    @default(now())
   
   @@unique([attemptId, questionId])
-  @@index([attemptId])
-  @@index([questionId])
 }
 
 // ============================================
@@ -471,12 +397,10 @@ model File {
   offering        CourseOffering? @relation(fields: [offeringId], references: [id])
   
   uploaderId      String
+  uploader        User        @relation("FileUploader", fields: [uploaderId], references: [id])
   
   createdAt       DateTime    @default(now())
   deletedAt       DateTime?   // Soft Delete
-  
-  @@index([offeringId])
-  @@index([uploaderId])
 }
 
 // ============================================
@@ -492,16 +416,12 @@ model Notification {
   title           String
   body            String
   type            String      // e.g., "quiz_published", "grade_released"
-  data            Json?       // بيانات إضافية
+  data            String?     // JSON string for SQLite
   
   isRead          Boolean     @default(false)
   readAt          DateTime?
   
   createdAt       DateTime    @default(now())
-  
-  @@index([userId])
-  @@index([isRead])
-  @@index([createdAt])
 }
 
 // ============================================
@@ -518,16 +438,11 @@ model AuditLog {
   entityType      String      // e.g., "User", "Quiz"
   entityId        String?
   
-  oldData         Json?
-  newData         Json?
-  metadata        Json?       // IP, User Agent, etc.
+  oldData         String?     // JSON string for SQLite
+  newData         String?     // JSON string for SQLite
+  metadata        String?     // JSON string for SQLite (IP, User Agent, etc.)
   
   createdAt       DateTime    @default(now())
-  
-  @@index([actorId])
-  @@index([action])
-  @@index([entityType])
-  @@index([createdAt])
 }
 
 // ============================================
@@ -542,6 +457,4 @@ model SystemSetting {
   description     String?
   
   updatedAt       DateTime    @updatedAt
-  
-  @@index([key])
 }
