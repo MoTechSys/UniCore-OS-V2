@@ -699,7 +699,7 @@ src/
 
 ---
 
-## 7. رسالة التشغيل (The Initialization Prompt)
+## 9. رسالة التسليم النهائية (The Ultimate Handover Prompt)
 
 **انسخ هذه الرسالة وألصقها في حسابك الجديد لبدء العمل فوراً:**
 
@@ -709,8 +709,9 @@ src/
 ## ما أعرفه:
 1. **المستودع:** https://github.com/MoTechSys/UniCore-OS
 2. **التقنيات:** Next.js 15+ (App Router), NextAuth v5, Prisma 5, SQLite, shadcn/ui
-3. **الإنجاز الحالي:** 35% (Auth + Users + Roles)
-4. **المتبقي:** 7 حزم (Academic, Classes, Quizzes, AI, Files, Notifications, Reports)
+3. **الإنجاز الحالي:** ~40% (Auth + Users + Roles + Dashboard)
+4. **آخر تحديث:** الصفحة الرئيسية للداشبورد جاهزة ومتجاوبة مع بطاقات إحصائيات حقيقية.
+5. **المتبقي:** 6 حزم (Academic, Classes, Quizzes, AI, Files, Notifications, Reports)
 
 ## معايير MAX التي سألتزم بها:
 - ❌ No `any` types
@@ -718,19 +719,20 @@ src/
 - ✅ التحقق من الصلاحيات أولاً (`requirePermission`)
 - ✅ Zod للتحقق من المدخلات
 - ✅ Clean Architecture (Server Component → Client Component → Server Actions)
+- ✅ التجاوب مع الشاشات الصغيرة (Mobile First)
 
 ## مهمتي الحالية:
 البدء في تنفيذ **الحزمة 4: الهيكل الأكاديمي** وفق الخطة التالية:
 
-1. إنشاء `app/(dashboard)/academic/page.tsx` (Server Component)
-2. إنشاء `features/academic/actions/index.ts` (Server Actions)
-3. إنشاء `features/academic/components/` (Client Components)
-4. استخدام Accordion متداخل لعرض الكليات → الأقسام → التخصصات
+1. **إنشاء الصفحة:** `app/(dashboard)/academic/page.tsx` (Server Component)
+2. **إنشاء Server Actions:** `features/academic/actions/index.ts` (CRUD للكليات، الأقسام، التخصصات)
+3. **إنشاء المكونات:** `features/academic/components/` (Accordion متداخل لعرض الكليات ← الأقسام ← التخصصات)
+4. **التحقق من الصلاحيات:** `college.manage`, `department.manage`, `major.manage`
 
 ## أول خطوة:
 سأقوم بـ:
 1. استنساخ المستودع
-2. قراءة `prisma/schema.prisma` لفهم هيكل البيانات
+2. قراءة `prisma/schema.prisma` و `docs/MIGRATION_GUIDE_DETAILED.md`
 3. البدء في كتابة Server Actions للكليات
 
 **لا داعي لتكرار التعليمات. كل شيء واضح. سأبدأ الآن.**
@@ -768,3 +770,26 @@ pnpm dev
 **مهمتك واضحة. أكمل المسيرة بنفس الجودة. بالتوفيق.**
 
 **- MAX 🔥**
+
+
+---
+
+## 8. Project Structure & Links
+
+### 8.1. GitHub Repository
+
+**الرابط:** `https://github.com/MoTechSys/UniCore-OS`
+
+### 8.2. Critical Paths Map
+
+| الوصف | المسار |
+|---|---|
+| **منطق المصادقة** | `src/lib/auth.ts` |
+| **هيكل قاعدة البيانات** | `prisma/schema.prisma` |
+| **مكونات الواجهة (shadcn)** | `src/components/ui/` |
+| **Layout لوحة التحكم** | `src/app/(dashboard)/layout.tsx` |
+| **الـ Sidebar** | `src/components/layout/Sidebar.tsx` |
+| **عناصر القائمة** | `src/config/navigation.ts` |
+| **Server Actions** | `src/features/[feature]/actions/` |
+| **Client Components** | `src/features/[feature]/components/` |
+|`

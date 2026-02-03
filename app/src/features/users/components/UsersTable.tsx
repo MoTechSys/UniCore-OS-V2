@@ -217,7 +217,9 @@ export function UsersTable({ users, permissions, onRefresh }: UsersTableProps) {
 
   return (
     <>
-      <div className="rounded-md border">
+      {/* Mobile-friendly scrollable table container */}
+      <div className="rounded-md border overflow-x-auto">
+        <div className="min-w-[800px]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -354,6 +356,7 @@ export function UsersTable({ users, permissions, onRefresh }: UsersTableProps) {
             })}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
