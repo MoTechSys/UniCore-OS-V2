@@ -10,7 +10,7 @@
 
 import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { safeZodResolver } from "@/lib/form-resolver"
 import { z } from "zod"
 import {
     Sparkles,
@@ -127,7 +127,7 @@ export function AIQuestionGenerator({
     }>({ status: "idle" })
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema) as any,
+        resolver: safeZodResolver<FormValues>(formSchema),
         defaultValues: {
             topic: "",
             count: 5,

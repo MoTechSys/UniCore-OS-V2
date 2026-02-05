@@ -11,7 +11,7 @@
 import { useTransition } from "react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { safeZodResolver } from "@/lib/form-resolver"
 import { Loader2, Save } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -69,7 +69,7 @@ export function QuizSettingsForm({
     const [isPending, startTransition] = useTransition()
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema) as any,
+        resolver: safeZodResolver<FormValues>(formSchema),
         defaultValues: {
             title: quiz.title,
             description: quiz.description ?? "",

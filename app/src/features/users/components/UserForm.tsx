@@ -11,7 +11,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { safeZodResolver } from "@/lib/form-resolver"
 import { z } from "zod"
 import { createUser, updateUser, getRoles, type UserWithRoles } from "../actions"
 import {
@@ -73,13 +73,13 @@ export function UserForm({ user, mode }: UserFormProps) {
   const [loadingRoles, setLoadingRoles] = useState(true)
 
   const form = useForm<UserFormValues>({
-    resolver: zodResolver(
+    resolver: safeZodResolver<UserFormValues>(
       mode === "create"
         ? userFormSchema.extend({
           password: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
         })
         : userFormSchema
-    ) as any,
+    ),
     defaultValues: {
       email: user?.email ?? "",
       firstNameAr: user?.profile?.firstNameAr ?? "",

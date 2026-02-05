@@ -12,7 +12,7 @@
 import { useState, useEffect, useTransition } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
 import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { safeZodResolver } from "@/lib/form-resolver"
 import {
     Plus,
     Trash2,
@@ -149,7 +149,7 @@ export function QuestionBuilder({
     const [showAIGenerator, setShowAIGenerator] = useState(false)
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema) as any,
+        resolver: safeZodResolver<FormValues>(formSchema),
         defaultValues: {
             questions: initialQuestions.length > 0 ? initialQuestions : [],
         },

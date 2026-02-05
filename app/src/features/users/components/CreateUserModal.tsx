@@ -11,7 +11,7 @@
 
 import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { safeZodResolver } from "@/lib/form-resolver"
 import { z } from "zod"
 import { createUser } from "../actions"
 import {
@@ -98,7 +98,7 @@ export function CreateUserModal({
   const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<CreateUserFormData>({
-    resolver: zodResolver(createUserSchema) as any,
+    resolver: safeZodResolver<CreateUserFormData>(createUserSchema),
     defaultValues: {
       academicId: "",
       email: "",

@@ -11,7 +11,7 @@
 import { useTransition } from "react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { safeZodResolver } from "@/lib/form-resolver"
 import { format } from "date-fns"
 import { CalendarIcon, Loader2 } from "lucide-react"
 import {
@@ -89,7 +89,7 @@ export function CreateSemesterModal({
     const currentYear = new Date().getFullYear()
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema) as any,
+        resolver: safeZodResolver<FormValues>(formSchema),
         defaultValues: {
             code: "",
             nameAr: "",

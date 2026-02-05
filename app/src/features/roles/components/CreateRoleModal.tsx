@@ -11,7 +11,7 @@
 
 import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { safeZodResolver } from "@/lib/form-resolver"
 import { z } from "zod"
 import { Shield, Loader2, ChevronDown, ChevronRight, Check } from "lucide-react"
 import { toast } from "sonner"
@@ -103,7 +103,7 @@ export function CreateRoleModal({
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set())
 
   const form = useForm<CreateRoleFormData>({
-    resolver: zodResolver(createRoleSchema) as any,
+    resolver: safeZodResolver<CreateRoleFormData>(createRoleSchema),
     defaultValues: {
       code: "",
       nameAr: "",
@@ -353,8 +353,8 @@ export function CreateRoleModal({
                                   <div
                                     key={permission.id}
                                     className={`flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors ${selectedPermissions.has(permission.id)
-                                        ? "bg-primary/10 border-primary"
-                                        : "hover:bg-muted/50"
+                                      ? "bg-primary/10 border-primary"
+                                      : "hover:bg-muted/50"
                                       }`}
                                     onClick={() => togglePermission(permission.id)}
                                   >

@@ -12,7 +12,7 @@ import { useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { safeZodResolver } from "@/lib/form-resolver"
 import { Loader2 } from "lucide-react"
 import {
     Dialog,
@@ -82,7 +82,7 @@ export function CreateQuizModal({
     const [isPending, startTransition] = useTransition()
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema) as any,
+        resolver: safeZodResolver<FormValues>(formSchema),
         defaultValues: {
             title: "",
             description: "",
