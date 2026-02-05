@@ -7,10 +7,22 @@ import { cn } from "@/lib/utils";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+const variantStyles = {
+  default: "bg-primary/10 text-primary",
+  primary: "bg-primary/10 text-primary",
+  success: "bg-green-500/10 text-green-500",
+  warning: "bg-yellow-500/10 text-yellow-500",
+  info: "bg-blue-500/10 text-blue-500",
+  danger: "bg-red-500/10 text-red-500",
+} as const;
+
+type Variant = keyof typeof variantStyles;
+
 interface StatCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
+  variant?: Variant;
   trend?: {
     value: number;
     isPositive: boolean;
@@ -19,7 +31,15 @@ interface StatCardProps {
   className?: string;
 }
 
-export function StatCard({ title, value, icon: Icon, trend, description, className }: StatCardProps) {
+export function StatCard({
+  title,
+  value,
+  icon: Icon,
+  variant = "default",
+  trend,
+  description,
+  className
+}: StatCardProps) {
   return (
     <Card className={cn("card-hover", className)}>
       <CardContent className="p-6">
@@ -45,11 +65,12 @@ export function StatCard({ title, value, icon: Icon, trend, description, classNa
               <p className="text-sm text-muted-foreground">{description}</p>
             )}
           </div>
-          <div className="p-3 rounded-lg bg-primary/10">
-            <Icon className="h-6 w-6 text-primary" />
+          <div className={cn("p-3 rounded-lg", variantStyles[variant])}>
+            <Icon className="h-6 w-6" />
           </div>
         </div>
       </CardContent>
     </Card>
   );
 }
+

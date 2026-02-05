@@ -76,10 +76,10 @@ export function UserForm({ user, mode }: UserFormProps) {
     resolver: zodResolver(
       mode === "create"
         ? userFormSchema.extend({
-            password: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
-          })
+          password: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
+        })
         : userFormSchema
-    ),
+    ) as any,
     defaultValues: {
       email: user?.email ?? "",
       firstNameAr: user?.profile?.firstNameAr ?? "",
@@ -297,10 +297,10 @@ export function UserForm({ user, mode }: UserFormProps) {
                                       return checked
                                         ? field.onChange([...field.value, role.id])
                                         : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== role.id
-                                            )
+                                          field.value?.filter(
+                                            (value) => value !== role.id
                                           )
+                                        )
                                     }}
                                     disabled={role.isSystem && mode === "edit"}
                                   />

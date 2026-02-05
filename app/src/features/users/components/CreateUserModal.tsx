@@ -98,7 +98,7 @@ export function CreateUserModal({
   const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<CreateUserFormData>({
-    resolver: zodResolver(createUserSchema),
+    resolver: zodResolver(createUserSchema) as any,
     defaultValues: {
       academicId: "",
       email: "",
@@ -161,7 +161,7 @@ export function CreateUserModal({
               <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">
                 المعلومات الأساسية
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}

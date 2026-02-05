@@ -86,7 +86,7 @@ export function CreateMajorModal({
     const [isPending, startTransition] = useTransition()
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             departmentId: defaultDepartmentId ?? "",
             code: "",

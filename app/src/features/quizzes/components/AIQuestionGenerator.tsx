@@ -127,7 +127,7 @@ export function AIQuestionGenerator({
     }>({ status: "idle" })
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             topic: "",
             count: 5,
@@ -256,8 +256,8 @@ export function AIQuestionGenerator({
                                                 key={option.value}
                                                 variant="outline"
                                                 className={`cursor-pointer px-4 py-2 text-sm transition-all ${field.value === option.value
-                                                        ? option.color
-                                                        : "hover:bg-muted"
+                                                    ? option.color
+                                                    : "hover:bg-muted"
                                                     }`}
                                                 onClick={() => field.onChange(option.value)}
                                             >
@@ -287,8 +287,8 @@ export function AIQuestionGenerator({
                                                     key={option.value}
                                                     onClick={() => toggleQuestionType(option.value)}
                                                     className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isSelected
-                                                            ? "border-primary bg-primary/5"
-                                                            : "border-border hover:border-primary/50"
+                                                        ? "border-primary bg-primary/5"
+                                                        : "border-border hover:border-primary/50"
                                                         }`}
                                                 >
                                                     <Checkbox checked={isSelected} />

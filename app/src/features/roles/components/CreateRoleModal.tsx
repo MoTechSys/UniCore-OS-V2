@@ -103,7 +103,7 @@ export function CreateRoleModal({
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set())
 
   const form = useForm<CreateRoleFormData>({
-    resolver: zodResolver(createRoleSchema),
+    resolver: zodResolver(createRoleSchema) as any,
     defaultValues: {
       code: "",
       nameAr: "",
@@ -140,7 +140,7 @@ export function CreateRoleModal({
   const toggleCategoryAll = (category: PermissionCategory) => {
     const categoryPermissionIds = category.permissions.map(p => p.id)
     const allSelected = categoryPermissionIds.every(id => selectedPermissions.has(id))
-    
+
     const newSelected = new Set(selectedPermissions)
     if (allSelected) {
       // Deselect all in category
@@ -222,7 +222,7 @@ export function CreateRoleModal({
                 <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">
                   المعلومات الأساسية
                 </h3>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -231,9 +231,9 @@ export function CreateRoleModal({
                       <FormItem>
                         <FormLabel>كود الدور *</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="MANAGER" 
-                            dir="ltr" 
+                          <Input
+                            placeholder="MANAGER"
+                            dir="ltr"
                             {...field}
                             onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                           />
@@ -352,11 +352,10 @@ export function CreateRoleModal({
                                 {category.permissions.map((permission) => (
                                   <div
                                     key={permission.id}
-                                    className={`flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors ${
-                                      selectedPermissions.has(permission.id)
+                                    className={`flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors ${selectedPermissions.has(permission.id)
                                         ? "bg-primary/10 border-primary"
                                         : "hover:bg-muted/50"
-                                    }`}
+                                      }`}
                                     onClick={() => togglePermission(permission.id)}
                                   >
                                     <Checkbox

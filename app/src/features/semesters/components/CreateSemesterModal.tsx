@@ -89,7 +89,7 @@ export function CreateSemesterModal({
     const currentYear = new Date().getFullYear()
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             code: "",
             nameAr: "",

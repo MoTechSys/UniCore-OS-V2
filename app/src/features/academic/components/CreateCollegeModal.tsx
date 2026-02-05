@@ -73,7 +73,7 @@ export function CreateCollegeModal({
     const [isPending, startTransition] = useTransition()
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             code: "",
             nameAr: "",

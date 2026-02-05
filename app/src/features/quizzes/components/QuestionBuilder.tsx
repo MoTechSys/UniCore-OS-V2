@@ -149,7 +149,7 @@ export function QuestionBuilder({
     const [showAIGenerator, setShowAIGenerator] = useState(false)
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             questions: initialQuestions.length > 0 ? initialQuestions : [],
         },

@@ -69,7 +69,7 @@ export function QuizSettingsForm({
     const [isPending, startTransition] = useTransition()
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             title: quiz.title,
             description: quiz.description ?? "",
