@@ -374,6 +374,11 @@ model Answer {
   isCorrect       Boolean?
   pointsEarned    Float?
   
+  // AI Grading Fields
+  aiScore         Float?      // درجة AI من 0 إلى 100
+  aiFeedback      String?     // ملاحظات AI
+  aiGradedAt      DateTime?   // تاريخ التصحيح بالذكاء الاصطناعي
+  
   answeredAt      DateTime    @default(now())
   
   @@unique([attemptId, questionId])
@@ -388,6 +393,7 @@ model File {
   
   name            String
   originalName    String
+  key             String      @unique @default(cuid()) // UUID - used as filename in storage for security
   mimeType        String
   size            Int         // بالبايت
   path            String
@@ -415,13 +421,15 @@ model Notification {
   
   title           String
   body            String
-  type            String      // e.g., "quiz_published", "grade_released"
+  type            String      // INFO, WARNING, SUCCESS, ERROR
   data            String?     // JSON string for SQLite
+  link            String?     // URL to navigate on click
   
   isRead          Boolean     @default(false)
   readAt          DateTime?
   
   createdAt       DateTime    @default(now())
+  deletedAt       DateTime?   // Soft Delete
 }
 
 // ============================================

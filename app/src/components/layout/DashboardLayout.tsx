@@ -44,6 +44,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { sidebarNavItems } from "@/config/navigation"
+import { NotificationBell } from "@/features/notifications/components"
 
 // ============================================
 // TYPES
@@ -140,19 +141,7 @@ function Header({
 
       {/* Left side */}
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative"
-          onClick={() => router.push("/notifications")}
-        >
-          <Bell className="h-5 w-5" />
-          {notificationCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-              {notificationCount}
-            </Badge>
-          )}
-        </Button>
+        <NotificationBell />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -201,7 +190,6 @@ function MobileHeader({ title, subtitle }: { title: string; subtitle?: string })
   const router = useRouter()
   const { data: session } = useSession()
   const user = session?.user
-  const notificationCount = 3 // TODO: Get from API
 
   const handleLogout = async () => {
     await logout()
@@ -222,19 +210,7 @@ function MobileHeader({ title, subtitle }: { title: string; subtitle?: string })
       </div>
 
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 relative"
-          onClick={() => router.push("/notifications")}
-        >
-          <Bell className="h-4 w-4" />
-          {notificationCount > 0 && (
-            <Badge className="absolute -top-1 -left-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] bg-primary">
-              {notificationCount}
-            </Badge>
-          )}
-        </Button>
+        <NotificationBell />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

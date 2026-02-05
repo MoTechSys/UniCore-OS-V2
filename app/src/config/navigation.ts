@@ -60,6 +60,14 @@ export const sidebarNavItems: NavItem[] = [
     // No permission required - everyone can see dashboard
   },
   {
+    id: "grades",
+    label: "درجاتي",
+    icon: GraduationCap,
+    href: "/grades",
+    showInMobile: true,
+    // No permission required - students see their own grades
+  },
+  {
     id: "users",
     label: "إدارة المستخدمين",
     icon: Users,
@@ -122,7 +130,7 @@ export const sidebarNavItems: NavItem[] = [
     label: "الإعدادات",
     icon: Settings,
     href: "/settings",
-    permission: "system.settings",
+    // No permission required - everyone can access their own settings
   },
   {
     id: "logs",
@@ -161,20 +169,20 @@ export function hasNavAccess(
 ): boolean {
   // System role (Super Admin) has access to everything
   if (isSystemRole) return true
-  
+
   // No permission required
   if (!item.permission && !item.anyPermission) return true
-  
+
   // Check single permission
   if (item.permission) {
     return permissions.includes(item.permission)
   }
-  
+
   // Check any permission
   if (item.anyPermission && item.anyPermission.length > 0) {
     return item.anyPermission.some(p => permissions.includes(p))
   }
-  
+
   return false
 }
 
