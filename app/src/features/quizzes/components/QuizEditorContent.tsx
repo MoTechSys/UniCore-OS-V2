@@ -191,7 +191,7 @@ export function QuizEditorContent({
                 <TabsContent value="questions" className="mt-4">
                     <QuestionBuilder
                         quizId={quiz.id}
-                        initialQuestions={quiz.questions}
+                        initialQuestions={quiz.questions as any}
                         isReadOnly={isReadOnly}
                         onSaved={handleQuestionsSaved}
                         onDirtyChange={setHasUnsavedChanges}

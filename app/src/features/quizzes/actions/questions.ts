@@ -218,7 +218,7 @@ export async function updateQuestion(
         }
 
         // Delete old options and create new ones
-        await db.$transaction(async (tx) => {
+        await db.$transaction(async (tx: any) => {
             // Delete old options
             await tx.option.deleteMany({
                 where: { questionId: validated.id },
@@ -384,13 +384,13 @@ export async function saveAllQuestions(
         }
 
         // Get existing question IDs
-        const existingIds = new Set(quiz.questions.map((q) => q.id))
-        const newQuestionIds = new Set(validated.questions.filter((q) => q.id).map((q) => q.id))
+        const existingIds = new Set(quiz.questions.map((q: any) => q.id))
+        const newQuestionIds = new Set(validated.questions.filter((q: any) => q.id).map((q: any) => q.id))
 
         // IDs to delete (exist in DB but not in new list)
         const toDelete = [...existingIds].filter((id) => !newQuestionIds.has(id))
 
-        await db.$transaction(async (tx) => {
+        await db.$transaction(async (tx: any) => {
             // Delete removed questions
             if (toDelete.length > 0) {
                 await tx.question.deleteMany({

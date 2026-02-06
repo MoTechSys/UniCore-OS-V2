@@ -142,7 +142,7 @@ export async function getStudentTranscript(): Promise<ActionResult<TranscriptSem
                 })
             }
 
-            const quizzes: TranscriptQuiz[] = enrollment.offering.quizzes.map(quiz => {
+            const quizzes: TranscriptQuiz[] = enrollment.offering.quizzes.map((quiz: any) => {
                 const attempt = quiz.attempts[0]
                 return {
                     id: quiz.id,
@@ -154,8 +154,8 @@ export async function getStudentTranscript(): Promise<ActionResult<TranscriptSem
                 }
             })
 
-            const totalScore = quizzes.reduce((sum, q) => sum + (q.score ?? 0), 0)
-            const maxScore = quizzes.reduce((sum, q) => sum + q.maxScore, 0)
+            const totalScore = quizzes.reduce((sum: number, q: any) => sum + (q.score ?? 0), 0)
+            const maxScore = quizzes.reduce((sum: number, q: any) => sum + q.maxScore, 0)
 
             semesterMap.get(semester.id)!.offerings.push({
                 id: enrollment.offering.id,
@@ -231,14 +231,14 @@ export async function getOfferingGradebook(
         }
 
         // Check if user is instructor of this offering (or system role)
-        const isInstructor = offering.instructors.some(i => i.id === session.user.id)
+        const isInstructor = offering.instructors.some((i: any) => i.id === session.user.id)
         const isSystemRole = session.user.isSystemRole
         if (!isInstructor && !isSystemRole) {
             return { success: false, error: "غير مصرح بالوصول لهذه الشعبة" }
         }
 
         // Get all attempts for this offering's quizzes
-        const quizIds = offering.quizzes.map(q => q.id)
+        const quizIds = offering.quizzes.map((q: any) => q.id)
         const attempts = await db.quizAttempt.findMany({
             where: { quizId: { in: quizIds } },
             select: {
@@ -255,10 +255,10 @@ export async function getOfferingGradebook(
         }
 
         // Calculate total possible points
-        const maxPossible = offering.quizzes.reduce((sum, q) => sum + q.totalPoints, 0)
+        const maxPossible = offering.quizzes.reduce((sum: number, q: any) => sum + q.totalPoints, 0)
 
         // Build student rows
-        const students: GradebookStudent[] = offering.enrollments.map(enrollment => {
+        const students: GradebookStudent[] = offering.enrollments.map((enrollment: any) => {
             const student = enrollment.student
             const name = student.profile
                 ? `${student.profile.firstNameAr} ${student.profile.lastNameAr}`
@@ -289,7 +289,7 @@ export async function getOfferingGradebook(
         return {
             success: true,
             data: {
-                quizzes: offering.quizzes.map(q => ({
+                quizzes: offering.quizzes.map((q: any) => ({
                     id: q.id,
                     title: q.title,
                     maxScore: q.totalPoints,

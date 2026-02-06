@@ -630,7 +630,7 @@ export async function duplicateQuiz(id: string): Promise<ActionResult<{ id: stri
                 allowReview: original.allowReview,
                 status: "DRAFT",
                 questions: {
-                    create: original.questions.map((q) => ({
+                    create: original.questions.map((q: any) => ({
                         type: q.type,
                         difficulty: q.difficulty,
                         text: q.text,
@@ -639,7 +639,7 @@ export async function duplicateQuiz(id: string): Promise<ActionResult<{ id: stri
                         order: q.order,
                         isAiGenerated: false,
                         options: {
-                            create: q.options.map((o) => ({
+                            create: q.options.map((o: any) => ({
                                 text: o.text,
                                 isCorrect: o.isCorrect,
                                 order: o.order,
@@ -685,7 +685,7 @@ export async function getOfferingsForQuiz(): Promise<
 
         return {
             success: true,
-            data: offerings.map((o) => ({
+            data: offerings.map((o: any) => ({
                 id: o.id,
                 code: o.code,
                 courseName: o.course.nameAr,
@@ -711,7 +711,7 @@ export async function recalculateTotalPoints(quizId: string): Promise<ActionResu
             select: { points: true },
         })
 
-        const totalPoints = questions.reduce((sum, q) => sum + q.points, 0)
+        const totalPoints = questions.reduce((sum: number, q: any) => sum + q.points, 0)
 
         await db.quiz.update({
             where: { id: quizId },

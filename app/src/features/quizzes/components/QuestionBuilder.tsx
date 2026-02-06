@@ -463,7 +463,7 @@ export function QuestionBuilder({
                                                         questionIndex={index}
                                                         form={form}
                                                         isReadOnly={isReadOnly}
-                                                        questionType={form.watch(`questions.${index}.type`)}
+                                                        questionType={form.watch(`questions.${index}.type`) as "MULTIPLE_CHOICE" | "TRUE_FALSE"}
                                                     />
                                                 )}
 
