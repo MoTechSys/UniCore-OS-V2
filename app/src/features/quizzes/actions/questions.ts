@@ -14,6 +14,7 @@ import { z } from "zod"
 import { db } from "@/lib/db"
 import { requirePermission } from "@/lib/auth/permissions"
 import { recalculateTotalPoints, type ActionResult } from "./index"
+import { type OptionInput } from "./utils"
 
 // ============================================
 // TYPES
@@ -21,13 +22,6 @@ import { recalculateTotalPoints, type ActionResult } from "./index"
 
 export type QuestionType = "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SHORT_ANSWER"
 export type Difficulty = "EASY" | "MEDIUM" | "HARD"
-
-export interface OptionInput {
-    id?: string
-    text: string
-    isCorrect: boolean
-    order: number
-}
 
 export interface QuestionInput {
     id?: string
@@ -473,23 +467,3 @@ export async function saveAllQuestions(
     }
 }
 
-/**
- * Create default options for TRUE_FALSE question
- */
-export function createTrueFalseOptions(correctAnswer: boolean): OptionInput[] {
-    return [
-        { text: "صح", isCorrect: correctAnswer, order: 0 },
-        { text: "خطأ", isCorrect: !correctAnswer, order: 1 },
-    ]
-}
-
-/**
- * Create empty MCQ options
- */
-export function createEmptyMCQOptions(count: number = 4): OptionInput[] {
-    return Array.from({ length: count }, (_, i) => ({
-        text: "",
-        isCorrect: i === 0,
-        order: i,
-    }))
-}

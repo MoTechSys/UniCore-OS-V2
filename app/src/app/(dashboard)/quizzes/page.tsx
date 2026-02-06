@@ -78,7 +78,7 @@ export default async function QuizzesPage({ searchParams }: PageProps) {
     ])
 
     const quizzes = quizzesResult.success ? quizzesResult.data ?? [] : []
-    const stats = statsResult.success ? statsResult.data : null
+    const stats = statsResult.success ? (statsResult.data ?? null) : null
     const offerings = offeringsResult.success ? offeringsResult.data ?? [] : []
 
     return (

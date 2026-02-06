@@ -66,7 +66,7 @@ export default async function SemestersPage() {
     ])
 
     const semesters = semestersResult.success ? semestersResult.data ?? [] : []
-    const stats = statsResult.success ? statsResult.data : null
+    const stats = statsResult.success ? (statsResult.data ?? null) : null
 
     return (
         <DashboardLayout title="الفصول الدراسية" subtitle="إدارة الفصول الدراسية وتفعيلها">

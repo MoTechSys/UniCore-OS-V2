@@ -179,7 +179,7 @@ export async function getStudentQuizzes(): Promise<ActionResult<StudentQuizData[
             select: { offeringId: true },
         })
 
-        const offeringIds = enrollments.map((e) => e.offeringId)
+        const offeringIds = enrollments.map((e: { offeringId: string }) => e.offeringId)
 
         if (offeringIds.length === 0) {
             return { success: true, data: [] }
@@ -221,7 +221,7 @@ export async function getStudentQuizzes(): Promise<ActionResult<StudentQuizData[
             },
         })
 
-        const result: StudentQuizData[] = quizzes.map((quiz) => ({
+        const result: StudentQuizData[] = quizzes.map((quiz: any) => ({
             id: quiz.id,
             title: quiz.title,
             description: quiz.description,
@@ -397,11 +397,11 @@ export async function getQuizForTaking(
 
         // Build answers map
         const answersMap = new Map(
-            attempt.answers.map((a) => [a.questionId, a])
+            attempt.answers.map((a: any) => [a.questionId, a])
         )
 
         // Prepare questions (shuffle if needed)
-        let questions = quiz.questions.map((q) => ({
+        let questions = quiz.questions.map((q: any) => ({
             id: q.id,
             type: q.type,
             text: q.text,
@@ -561,10 +561,10 @@ export async function submitQuiz(
 
         // Grade the quiz
         let totalScore = 0
-        const questionMap = new Map(attempt.quiz.questions.map((q) => [q.id, q]))
+        const questionMap = new Map(attempt.quiz.questions.map((q: any) => [q.id, q]))
 
         for (const answer of validated.answers) {
-            const question = questionMap.get(answer.questionId)
+            const question = questionMap.get(answer.questionId) as any
             if (!question) continue
 
             let isCorrect: boolean | null = null
@@ -574,7 +574,7 @@ export async function submitQuiz(
                 // Auto-grade: check if selected option is correct
                 if (answer.selectedOptionId) {
                     const selectedOption = question.options.find(
-                        (o) => o.id === answer.selectedOptionId
+                        (o: any) => o.id === answer.selectedOptionId
                     )
                     isCorrect = selectedOption?.isCorrect ?? false
                     pointsEarned = isCorrect ? question.points : 0
@@ -653,10 +653,10 @@ async function forceSubmitAttempt(attemptId: string): Promise<void> {
 
     // Grade existing answers
     let totalScore = 0
-    const questionMap = new Map(attempt.quiz.questions.map((q) => [q.id, q]))
+    const questionMap = new Map(attempt.quiz.questions.map((q: any) => [q.id, q]))
 
     for (const answer of attempt.answers) {
-        const question = questionMap.get(answer.questionId)
+        const question = questionMap.get(answer.questionId) as any
         if (!question) continue
 
         let isCorrect: boolean | null = null
@@ -665,7 +665,7 @@ async function forceSubmitAttempt(attemptId: string): Promise<void> {
         if (question.type === "MULTIPLE_CHOICE" || question.type === "TRUE_FALSE") {
             if (answer.selectedOptionId) {
                 const selectedOption = question.options.find(
-                    (o) => o.id === answer.selectedOptionId
+                    (o: any) => o.id === answer.selectedOptionId
                 )
                 isCorrect = selectedOption?.isCorrect ?? false
                 pointsEarned = isCorrect ? question.points : 0
@@ -745,12 +745,12 @@ export async function getQuizResult(
         }
 
         const answersMap = new Map(
-            attempt.answers.map((a) => [a.questionId, a])
+            attempt.answers.map((a: any) => [a.questionId, a])
         )
 
-        const questions = attempt.quiz.questions.map((q) => {
+        const questions = attempt.quiz.questions.map((q: any) => {
             const answer = answersMap.get(q.id)
-            const correctOption = q.options.find((o) => o.isCorrect)
+            const correctOption = q.options.find((o: any) => o.isCorrect)
 
             return {
                 id: q.id,
@@ -765,7 +765,7 @@ export async function getQuizResult(
                 correctOptionId: attempt.quiz.allowReview ? (correctOption?.id ?? null) : null,
                 options: attempt.quiz.allowReview
                     ? q.options
-                    : q.options.map((o) => ({ ...o, isCorrect: false })),
+                    : q.options.map((o: any) => ({ ...o, isCorrect: false })),
             }
         })
 

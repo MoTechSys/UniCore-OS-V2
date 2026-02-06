@@ -495,7 +495,7 @@ export async function publishQuiz(id: string): Promise<ActionResult> {
 
         if (enrollments.length > 0) {
             await createNotification({
-                userIds: enrollments.map(e => e.studentId),
+                userIds: enrollments.map((e: { studentId: string }) => e.studentId),
                 title: "كويز جديد",
                 body: `تم نشر كويز "${quiz.title}" في مادة ${quiz.offering.course.nameAr}`,
                 type: "INFO",

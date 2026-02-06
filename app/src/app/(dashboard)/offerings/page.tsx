@@ -85,7 +85,7 @@ export default async function OfferingsPage({ searchParams }: PageProps) {
     ])
 
     const offerings = offeringsResult.success ? offeringsResult.data ?? [] : []
-    const stats = statsResult.success ? statsResult.data : null
+    const stats = statsResult.success ? (statsResult.data ?? null) : null
     const semesters = semestersResult.success ? semestersResult.data ?? [] : []
     const courses = coursesResult.success ? coursesResult.data ?? [] : []
     const instructors = instructorsResult.success ? instructorsResult.data ?? [] : []

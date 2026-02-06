@@ -76,7 +76,7 @@ export default async function AcademicPage() {
     ])
 
     const colleges = collegesResult.success ? collegesResult.data ?? [] : []
-    const stats = statsResult.success ? statsResult.data : null
+    const stats = statsResult.success ? (statsResult.data ?? null) : null
 
     return (
         <DashboardLayout title="الهيكل الأكاديمي" subtitle="إدارة الكليات والأقسام والتخصصات والمقررات">
