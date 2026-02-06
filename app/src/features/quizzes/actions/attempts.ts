@@ -749,7 +749,7 @@ export async function getQuizResult(
         )
 
         const questions = attempt.quiz.questions.map((q: any) => {
-            const answer = answersMap.get(q.id)
+            const answer = answersMap.get(q.id) as any
             const correctOption = q.options.find((o: any) => o.isCorrect)
 
             return {
