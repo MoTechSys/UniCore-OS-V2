@@ -276,9 +276,9 @@ export async function getOfferingsStats(
         })
 
         const totalOfferings = offerings.length
-        const totalEnrollments = offerings.reduce((sum, o) => sum + o._count.enrollments, 0)
-        const openOfferings = offerings.filter((o) => o._count.enrollments < o.maxStudents).length
-        const fullOfferings = offerings.filter((o) => o._count.enrollments >= o.maxStudents).length
+        const totalEnrollments = offerings.reduce((sum: number, o: any) => sum + o._count.enrollments, 0)
+        const openOfferings = offerings.filter((o: any) => o._count.enrollments < o.maxStudents).length
+        const fullOfferings = offerings.filter((o: any) => o._count.enrollments >= o.maxStudents).length
 
         return {
             success: true,
@@ -518,7 +518,7 @@ export async function getCoursesForOffering(): Promise<
 
         return {
             success: true,
-            data: courses.map((c) => ({
+            data: courses.map((c: any) => ({
                 id: c.id,
                 code: c.code,
                 nameAr: c.nameAr,
@@ -560,7 +560,7 @@ export async function getInstructorsForOffering(): Promise<
 
         return {
             success: true,
-            data: instructors.map((i) => ({
+            data: instructors.map((i: any) => ({
                 id: i.id,
                 name: i.name ?? i.email,
                 email: i.email,

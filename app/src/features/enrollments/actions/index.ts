@@ -119,7 +119,7 @@ export async function searchStudents(
             where: { offeringId, droppedAt: null },
             select: { studentId: true },
         })
-        const enrolledIds = enrolledStudentIds.map((e) => e.studentId)
+        const enrolledIds = enrolledStudentIds.map((e: { studentId: string }) => e.studentId)
 
         // Search for students (with student role) not already enrolled
         const students = await db.user.findMany({
@@ -150,7 +150,7 @@ export async function searchStudents(
 
         return {
             success: true,
-            data: students.map((s) => ({
+            data: students.map((s: typeof students[0]) => ({
                 id: s.id,
                 name: s.name,
                 email: s.email,
@@ -318,7 +318,7 @@ export async function bulkEnrollStudents(
             where: { offeringId, studentId: { in: studentIds }, droppedAt: null },
             select: { studentId: true },
         })
-        const enrolledIds = new Set(existingEnrollments.map((e) => e.studentId))
+        const enrolledIds = new Set(existingEnrollments.map((e: { studentId: string }) => e.studentId))
 
         // Filter out already enrolled
         const toEnroll = studentIds.filter((id) => !enrolledIds.has(id))

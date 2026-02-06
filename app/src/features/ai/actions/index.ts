@@ -12,7 +12,7 @@
 
 import { z } from "zod"
 import { generateStructured, isAIConfigured } from "@/lib/ai"
-import { requirePermission } from "@/lib/permissions"
+import { requirePermission } from "@/lib/auth/permissions"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { createNotification } from "@/features/notifications/actions"
